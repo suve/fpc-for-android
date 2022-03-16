@@ -102,3 +102,19 @@ crossmake packages_smart
 echo "====----> install"
 mkdir -p /opt/fpc
 make crossinstall OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" INSTALL_PREFIX=/opt/fpc
+
+# Create wrapper script to help invoking FPC
+cat >"/opt/fpc/bin/fpc-${TARGET_ARCH}" <<EOF
+#!/bin/bash
+
+export PATH="\${PATH}:${NDK_PATH}/toolchains/${TOOLCHAIN_DIR}/prebuilt/linux-x86_64/bin/"
+
+/opt/fpc/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME} \\
+	-Fu/opt/fpc/lib/fpc/${FPC_VERSION}/units/${TARGET_ARCH}-android/* \\
+	-Fo/opt/fpc/lib/fpc/${FPC_VERSION}/units/${TARGET_ARCH}-android/* \\
+	-Fl${NDK_PATH}/${LIBS_DIR} \\
+	-Tandroid \$@
+
+EOF
+chmod +x "/opt/fpc/bin/fpc-${TARGET_ARCH}"
+
