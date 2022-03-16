@@ -46,3 +46,11 @@ mkdir -p /opt/fpc/usr
 make install INSTALL_PREFIX=/opt/fpc/usr
 ln -sr "/opt/fpc/usr/lib/fpc/${FPC_VERSION}/ppcx64" /opt/fpc/usr/bin/ppcx64
 
+# -- Create the FPC configuration file
+mkdir -p /opt/fpc/etc
+cat > /opt/fpc/etc/fpc.cfg <<EOF
+-viewn
+-Fu/usr/lib/fpc/\$fpcversion/units/\$fpctarget
+-Fu/usr/lib/fpc/\$fpcversion/units/\$fpctarget/*
+EOF
+
