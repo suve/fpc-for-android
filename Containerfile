@@ -6,7 +6,7 @@ RUN \
 	apt install -y \
 		fpc gdb zip
 
-COPY fpcbuild-3.2.2.tar.gz /build/
+COPY fpcbuild-3.2.2.tar.gz *.patch /build/
 COPY build-fpc.sh build-fpcross.sh /scripts/
 RUN /scripts/build-fpc.sh /build 3.2.2
 

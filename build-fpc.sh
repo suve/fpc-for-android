@@ -16,13 +16,16 @@ FPC_VERSION="$2"
 
 cd "${BUILD_DIR}"
 if [[ ! -d "fpcbuild-${FPC_VERSION}" ]]; then
-	if [[ -f "fpcbuild-${FPC_VERSION}.tar.gz" ]]; then
-		tar xzf "fpcbuild-${FPC_VERSION}.tar.gz"
-	else
+	if [[ ! -f "fpcbuild-${FPC_VERSION}.tar.gz" ]]; then
 		echo "Error: No \"fpcbuild-${FPC_VERSION}\" directory found" >&2
 		echo "Error: No \"fpcbuild-${FPC_VERSION}.tar.gz\" file found" >&2
 		exit 1
 	fi
+
+	tar xzf "fpcbuild-${FPC_VERSION}.tar.gz"
+	for PATCH in *.patch; do
+		patch -p1 -d "fpcbuild-${FPC_VERSION}/fpcsrc" < "${PATCH}"
+	done
 fi
 
 # -- Perform build

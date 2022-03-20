@@ -1,0 +1,27 @@
+From a68884f7502941e37b4a51b525b1698a04d4eb3d Mon Sep 17 00:00:00 2001
+From: suve <veg@svgames.pl>
+Date: Wed, 16 Mar 2022 23:01:09 +0100
+Subject: [PATCH] Make pas2jni use cthreads on Unices
+
+---
+ utils/pas2jni/pas2jni.pas | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/utils/pas2jni/pas2jni.pas b/utils/pas2jni/pas2jni.pas
+index c0a8d67917..c89fe92791 100644
+--- a/utils/pas2jni/pas2jni.pas
++++ b/utils/pas2jni/pas2jni.pas
+@@ -22,7 +22,9 @@
+ {$mode objfpc}{$H+}
+ program pas2jni;
+ 
+-uses SysUtils, Classes, writer, ppuparser;
++uses
++  {$IFDEF UNIX}cthreads,{$ENDIF}
++  SysUtils, Classes, writer, ppuparser;
+ 
+ var
+   w: TWriter;
+-- 
+GitLab
+
