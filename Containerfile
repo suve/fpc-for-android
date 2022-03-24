@@ -16,11 +16,11 @@ RUN \
 	cd /opt && \
 	mkdir -p /opt/android && \
 	unzip android-ndk-r21d.zip && \
-	mv android-ndk-r21d/ /opt/android/ndk && \
+	mv android-ndk-r21d/ /opt/android/ndk-21d && \
 	rm android-ndk-r21d.zip
 
 ENV ANDROID_API=29
-ENV ANDROID_NDK_ROOT=/opt/android/ndk/
+ENV ANDROID_NDK_ROOT=/opt/android/ndk-21d/
 
 RUN \
 	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 aarch64 && \
