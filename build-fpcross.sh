@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -eu -o pipefail
+SCRIPT_DIR="$(pwd)/$(dirname "$0")"
 
 # -- Check args
 
@@ -58,16 +59,7 @@ fi
 
 # -- Unpack
 
-cd "${BUILD_DIR}"
-if [[ ! -d "fpcbuild-${FPC_VERSION}" ]]; then
-	if [[ -f "fpcbuild-${FPC_VERSION}.tar.gz" ]]; then
-		tar xzf "fpcbuild-${FPC_VERSION}.tar.gz"
-	else
-		echo "Error: No \"fpcbuild-${FPC_VERSION}\" directory found" >&2
-		echo "Error: No \"fpcbuild-${FPC_VERSION}.tar.gz\" file found" >&2
-		exit 1
-	fi
-fi
+"${SCRIPT_DIR}/unpack-fpc.sh" "${BUILD_DIR}" "${FPC_VERSION}"
 
 # -- Perform build
 
