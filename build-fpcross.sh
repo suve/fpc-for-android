@@ -3,21 +3,51 @@
 set -eu -o pipefail
 SCRIPT_DIR="$(pwd)/$(dirname "$0")"
 
-# -- Check args
-
-if [[ "$#" -ne 3 ]]; then
-	cat >&2 <<EOF
-Usage: build-fpcross.sh BUILD_DIR FPC_VERSION TARGET_ARCH
+function print_usage() {
+cat <<EOF
+Usage: build-fpcross.sh [options] BUILD_DIR FPC_VERSION TARGET_ARCH
+Options:
+  --install INSTALL_DIR
+    Install the compiler once the build is complete.
 Required environment variables:
   - ANDROID_API - target Android API version
   - ANDROID_NDK_ROOT - Android NDK location
 EOF
+}
+
+# -- Parse args
+
+INSTALL_DIR=""
+
+while [[ "$#" -gt 0 ]]; do
+	if [[ "$1" == "--install" ]]; then
+		if [[ "$#" -eq 1 ]]; then
+			echo "build-fpcross.sh: The --install option requires an argument" >&2
+			exit 1
+		fi
+		INSTALL_DIR="$2"
+		shift 2
+	elif [[ "$1" == "--help" ]]; then
+		print_usage
+		exit
+	elif [[ "$1" == "--" ]]; then
+		shift 1
+		break
+	else
+		break
+	fi
+done
+
+if [[ "$#" -lt 3 ]]; then
+	print_usage >&2
 	exit 1
 fi
 
 BUILD_DIR="$1"
 FPC_VERSION="$2"
 TARGET_ARCH="$3"
+
+# -- Check args
 
 if [[ "${TARGET_ARCH}" == "aarch64" ]]; then
 	PPC_NAME="a64"
@@ -96,14 +126,20 @@ crossmake rtl_clean rtl_smart
 echo "====----> packages"
 crossmake packages_smart
 
+# -- Install (or exit early)
+
+if [[ -z "${INSTALL_DIR}" ]]; then
+	exit
+fi
+
 echo "====----> install"
-mkdir -p /opt/fpc/usr
-make crossinstall OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" INSTALL_PREFIX=/opt/fpc/usr
-ln -sr "/opt/fpc/usr/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "/opt/fpc/usr/bin/ppcross${PPC_NAME}"
+mkdir -p "${INSTALL_DIR}/usr"
+make crossinstall OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" INSTALL_PREFIX="${INSTALL_DIR}/usr"
+ln -sr "${INSTALL_DIR}/usr/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "${INSTALL_DIR}/usr/bin/ppcross${PPC_NAME}"
 
 # -- Add CPU+OS specific-configuration to fpc.cfg
-mkdir -p /opt/fpc/etc
-cat >>/opt/fpc/etc/fpc.cfg <<EOF
+mkdir -p "${INSTALL_DIR}/etc"
+cat >> "${INSTALL_DIR}/etc/fpc.cfg" <<EOF
 #ifdef android
 #ifdef cpu${TARGET_ARCH}
 -e${NDK_PATH}/toolchains/${TOOLCHAIN_DIR}/prebuilt/linux-x86_64/bin/

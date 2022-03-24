@@ -7,7 +7,9 @@ RUN \
 		fpc gdb zip
 
 COPY fpcbuild-*.tar.gz *.patch *.sh /scripts/
-RUN /scripts/build-fpc.sh /build 3.2.2
+RUN \
+	mkdir -p build && \
+	/scripts/build-fpc.sh --install /opt/fpc /build 3.2.2
 
 COPY android-ndk-r21d.zip /opt
 RUN \
@@ -21,9 +23,9 @@ ENV ANDROID_API=29
 ENV ANDROID_NDK_ROOT=/opt/android/ndk/
 
 RUN \
-	/scripts/build-fpcross.sh /build 3.2.2 aarch64 && \
-	/scripts/build-fpcross.sh /build 3.2.2 arm && \
-	/scripts/build-fpcross.sh /build 3.2.2 x86_64
+	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 aarch64 && \
+	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 arm && \
+	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 x86_64
 
 # -- Phase 2
 # Start with a clean container

@@ -3,10 +3,40 @@
 set -eu -o pipefail
 SCRIPT_DIR="$(pwd)/$(dirname "$0")"
 
-# -- Check args
+function print_usage() {
+cat <<EOF
+Usage: build-fpc.sh [options] BUILD_DIR FPC_VERSION
+Options:
+  --install INSTALL_DIR
+    Install the compiler once the build is complete.
+EOF
+}
 
-if [[ "$#" -ne 2 ]]; then
-	echo "Usage: build-fpc.sh BUILD_DIR FPC_VERSION" >&2
+# -- Parse args
+
+INSTALL_DIR=""
+
+while [[ "$#" -gt 0 ]]; do
+	if [[ "$1" == "--install" ]]; then
+		if [[ "$#" -eq 1 ]]; then
+			echo "build-fpc.sh: The --install option requires an argument" >&2
+			exit 1
+		fi
+		INSTALL_DIR="$2"
+		shift 2
+	elif [[ "$1" == "--help" ]]; then
+		print_usage
+		exit
+	elif [[ "$1" == "--" ]]; then
+		shift 1
+		break
+	else
+		break
+	fi
+done
+
+if [[ "$#" -lt 2 ]]; then
+	print_usage >&2
 	exit 1
 fi
 
@@ -33,14 +63,20 @@ make FPC="${NEW_FPC}" OPT="-gl" rtl_clean rtl_smart
 echo "====----> packages"
 make FPC="${NEW_FPC}" OPT="-gl" packages_smart
 
+# -- Install (or exit early)
+
+if [[ -z "${INSTALL_DIR}" ]]; then
+	exit
+fi
+
 echo "====----> install"
-mkdir -p /opt/fpc/usr
-make install INSTALL_PREFIX=/opt/fpc/usr
-ln -sr "/opt/fpc/usr/lib/fpc/${FPC_VERSION}/ppcx64" /opt/fpc/usr/bin/ppcx64
+mkdir -p "${INSTALL_DIR}/usr"
+make install INSTALL_PREFIX="${INSTALL_DIR}/usr"
+ln -sr "${INSTALL_DIR}/usr/lib/fpc/${FPC_VERSION}/ppcx64" "${INSTALL_DIR}/usr/bin/ppcx64"
 
 # -- Create the FPC configuration file
-mkdir -p /opt/fpc/etc
-cat > /opt/fpc/etc/fpc.cfg <<EOF
+mkdir -p "${INSTALL_DIR}/etc"
+cat >> "${INSTALL_DIR}/etc/fpc.cfg" <<EOF
 -viewn
 -Fu/usr/lib/fpc/\$fpcversion/units/\$fpctarget
 -Fu/usr/lib/fpc/\$fpcversion/units/\$fpctarget/*
