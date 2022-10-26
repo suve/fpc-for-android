@@ -35,12 +35,12 @@ FROM docker.io/ubuntu:20.04
 COPY --from=build /opt/android /opt/android
 COPY --from=build /opt/fpc /
 
-# Note: Strictly speaking, this isn't needed.
-# The container is now able to build Android executables.
-# It will, however, fail to build native executables because of missing ld.
+# - binutils: not needed for Android, but required by fpc for linking native executables
+# - file: used by ndk-build (though not strictly *required*)
+# - make: required by ndk-build
 ENV DEBIAN_FRONTEND noninteractive
 RUN \
 	apt update && \
-	apt install -y binutils && \
+	apt install -y binutils file make && \
 	apt clean
 
