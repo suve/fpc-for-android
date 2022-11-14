@@ -1,10 +1,9 @@
 FROM docker.io/ubuntu:20.04 AS build
 
-ENV DEBIAN_FRONTEND noninteractive
 RUN \
+	export DEBIAN_FRONTEND=noninteractive && \
 	apt update && \
-	apt install -y \
-		fpc gdb zip
+	apt install -y fpc gdb zip
 
 COPY fpcbuild-*.tar.gz *.patch *.sh /scripts/
 RUN \
@@ -35,11 +34,14 @@ FROM docker.io/ubuntu:20.04
 COPY --from=build /opt/android /opt/android
 COPY --from=build /opt/fpc /
 
+ENV ANDROID_API=29
+ENV ANDROID_NDK_ROOT=/opt/android/ndk-21d/
+
 # - binutils: not needed for Android, but required by fpc for linking native executables
 # - file: used by ndk-build (though not strictly *required*)
 # - make: required by ndk-build
-ENV DEBIAN_FRONTEND noninteractive
 RUN \
+	export DEBIAN_FRONTEND=noninteractive && \
 	apt update && \
 	apt install -y binutils file make && \
 	apt clean
