@@ -10,17 +10,18 @@ RUN \
 	mkdir -p build && \
 	/scripts/build-fpc.sh --install /opt/fpc /build 3.2.2
 
+ARG ANDROID_API
+ENV ANDROID_API=${ANDROID_API:-21}
+ENV ANDROID_NDK_ROOT=/opt/android/ndk-21d/
+
 COPY android-ndk-r21d.zip /opt
 RUN \
 	cd /opt && \
 	mkdir -p /opt/android && \
 	unzip android-ndk-r21d.zip && \
 	mv android-ndk-r21d/ /opt/android/ndk-21d && \
-	rm android-ndk-r21d.zip
-
-ARG ANDROID_API
-ENV ANDROID_API=${ANDROID_API:-21}
-ENV ANDROID_NDK_ROOT=/opt/android/ndk-21d/
+	rm android-ndk-r21d.zip && \
+	/scripts/ndk-slim.sh --verbose
 
 RUN \
 	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 aarch64 && \
