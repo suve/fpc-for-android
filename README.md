@@ -30,7 +30,12 @@ Make sure to grab the `fpcbuild-X.Y.Z` archive, **not** `fpc-source`.
 Before you can proceed, you may want to take a moment to think about which
 [Android API level](https://en.wikipedia.org/wiki/Android_version_history#Overview)
 (i.e. NDK platform) you'll want to target. You need to make this decision now,
-since it's required to specify the API level while building FPC.
+for two reasons:
+
+1. FPC itself is built against a specific API level;
+   in order to use a different level, the compiler must be rebuilt.
+2. The build process includes a "slimming" script that removes any files
+   pertaining to unused API levels.
 
 If you do not specify a level, the default value is `21`
 (Android 5.0 "Lollipop").
