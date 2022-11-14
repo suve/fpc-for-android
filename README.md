@@ -25,17 +25,28 @@ You can download the FPC source code from the
 Make sure to grab the `fpcbuild-X.Y.Z` archive, **not** `fpc-source`.
 
 
+## Picking the target Android API level
+
+Before you can proceed, you may want to take a moment to think about which
+[Android API level](https://en.wikipedia.org/wiki/Android_version_history#Overview)
+(i.e. NDK platform) you'll want to target. You need to make this decision now,
+since it's required to specify the API level while building FPC.
+
+If you do not specify a level, the default value is `21`
+(Android 5.0 "Lollipop").
+
+
 ## Building the container image
 
 Assuming you've downloaded both the Android NDK and FPC sources
 and placed them in the same directory as the `Containerfile`,
 all that's left to do now is:
 ```
-$ buildah bud -t fpc-android ./
+$ buildah bud --build-arg ANDROID_API=LEVEL -t fpc-android ./
 ```
 Or, if you're using Docker:
 ```
-$ docker build -t fpc-android ./
+$ docker build --build-arg ANDROID_API=LEVEL -t fpc-android ./
 ```
 
 The build process can be rather lengthy,
@@ -54,7 +65,7 @@ units redistributed along with the compiler.
 
 3. Third, a compiler for `arm-android` (32-bit ARM) is built.
 
-4. Fourth, a compiler for `x86_64-android` is built. The x86_64 Android target
+4. Fourth, a compiler for `x86_64-android` is built. The x86\_64 Android target
 is mostly useful for debugging your apps in the Android Simulator.
 
 

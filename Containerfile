@@ -18,7 +18,8 @@ RUN \
 	mv android-ndk-r21d/ /opt/android/ndk-21d && \
 	rm android-ndk-r21d.zip
 
-ENV ANDROID_API=29
+ARG ANDROID_API
+ENV ANDROID_API=${ANDROID_API:-21}
 ENV ANDROID_NDK_ROOT=/opt/android/ndk-21d/
 
 RUN \
@@ -34,7 +35,8 @@ FROM docker.io/ubuntu:20.04
 COPY --from=build /opt/android /opt/android
 COPY --from=build /opt/fpc /
 
-ENV ANDROID_API=29
+ARG ANDROID_API
+ENV ANDROID_API=${ANDROID_API:-21}
 ENV ANDROID_NDK_ROOT=/opt/android/ndk-21d/
 
 # - binutils: not needed for Android, but required by fpc for linking native executables
