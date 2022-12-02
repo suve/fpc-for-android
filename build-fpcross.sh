@@ -47,6 +47,24 @@ BUILD_DIR="$1"
 FPC_VERSION="$2"
 TARGET_ARCH="$3"
 
+# -- Check env vars
+
+if [[ -z "${ANDROID_API+isset}" ]]; then
+	echo "Error: \$ANDROID_API is unset" >&2
+	exit 1
+fi
+
+NDK_PATH=""
+if [[ ! -z "${ANDROID_NDK_ROOT+isset}" ]]; then
+	NDK_PATH="${ANDROID_NDK_ROOT}"
+elif [[ ! -z "${ANDROID_NDK_HOME+isset}" ]]; then
+	NDK_PATH="${ANDROID_NDK_HOME}"
+else
+	echo "Error: Both \$ANDROID_NDK_ROOT and \$ANDROID_NDK_HOME are unset" >&2
+	echo "Error: Unable to determine Android NDK location" >&2
+	exit 1
+fi
+
 # -- Check args
 
 if [[ "${TARGET_ARCH}" == "aarch64" ]]; then
@@ -66,24 +84,6 @@ elif [[ "${TARGET_ARCH}" == "x86_64" ]]; then
 	LIBS_DIR="platforms/android-${ANDROID_API}/arch-x86_64/usr/lib64"
 else
 	echo "Error: Unsupported arch \"${TARGET_ARCH}\"" >&2
-	exit 1
-fi
-
-# -- Check env vars
-
-if [[ -z "${ANDROID_API+isset}" ]]; then
-	echo "Error: \$ANDROID_API is unset" >&2
-	exit 1
-fi
-
-NDK_PATH=""
-if [[ ! -z "${ANDROID_NDK_ROOT+isset}" ]]; then
-	NDK_PATH="${ANDROID_NDK_ROOT}"
-elif [[ ! -z "${ANDROID_NDK_HOME+isset}" ]]; then
-	NDK_PATH="${ANDROID_NDK_HOME}"
-else
-	echo "Error: Both \$ANDROID_NDK_ROOT and \$ANDROID_NDK_HOME are unset" >&2
-	echo "Error: Unable to determine Android NDK location" >&2
 	exit 1
 fi
 
