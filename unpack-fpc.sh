@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -eu -o pipefail
-SCRIPT_DIR="$(pwd)/$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # -- Parse args
 
