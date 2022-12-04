@@ -94,7 +94,8 @@ fi
 # -- Perform build
 
 function nativemake() {
-	make $@ \
+	make -j "$(nproc)" \
+		$@ \
 		NOGDB=1 \
 		OS_TARGET="android" \
 		CPU_TARGET="${TARGET_ARCH}" \
