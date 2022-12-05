@@ -1,14 +1,29 @@
 # fpc-for-android
 
-An example repository showing how to use the build the Free Pascal Compiler
-to allow cross-compilation for Android. It constists of a Containerfile,
-used to build the Android cross-compiler, and some helper scripts.
+An example repository showing how to build the Free Pascal Compiler
+to allow cross-compilation for Android.
+
+
+## The two Containerfiles
+
+The repository contains two slightly different Containerfiles:
+
+- The default `Containerfile` takes a very from-the-ground-up approach,
+  basing on the Ubuntu 20.04 LTS container image. A copy of the Android NDK
+  is required for the build. The FPC cross-compiler is installed system-wide.
+  The end result is a smaller, if more bare-bones, image.
+
+- The alternative `Containerfile-cimg` is based on one of the
+  [Circle CI for Android](https://hub.docker.com/r/cimg/android) container
+  images. The FPC cross-compiler is installed only for the default user.
+  The end result is a more comprehensive, if bloated, image.
+
 
 ## Requirements
 
-To build the container, you'll need the following:
-- Android Native Development Kit r21d
-- Buildah (or Docker)
+To build the container images, you'll need the following:
+- Android Native Development Kit r21d (not needed for the `-cimg` image)
+- Buildah / Docker
 - Free Pascal Compiler v3.2.2 sources
 
 
@@ -16,6 +31,9 @@ To build the container, you'll need the following:
 
 You can download the Android Native Development Kit from the 
 [Android developer portal](https://developer.android.com/ndk/downloads/). 
+
+Make sure to grab the r21d release, as - for the time being - the build
+scripts do not support newer versions.
 
 
 ### Free Pascal Compiler source code
