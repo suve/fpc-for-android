@@ -8,7 +8,7 @@ RUN \
 COPY fpcbuild-*.tar.gz *.patch *.sh /scripts/
 RUN \
 	mkdir /build && \
-	/scripts/build-fpc.sh --install /opt/fpc /build 3.2.2
+	/scripts/build-fpc.sh --install system --destdir /opt/fpc /build 3.2.2
 
 ARG ANDROID_API
 ENV ANDROID_API=${ANDROID_API:-21}
@@ -24,9 +24,9 @@ RUN \
 	/scripts/ndk-slim.sh --remove-apis --remove-man --verbose
 
 RUN \
-	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 aarch64 && \
-	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 arm && \
-	/scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 x86_64
+	/scripts/build-fpcross.sh --install system --destdir /opt/fpc /build 3.2.2 aarch64 && \
+	/scripts/build-fpcross.sh --install system --destdir /opt/fpc /build 3.2.2 arm && \
+	/scripts/build-fpcross.sh --install system --destdir /opt/fpc /build 3.2.2 x86_64
 
 # -- Phase 2
 # Start with a clean container

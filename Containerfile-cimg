@@ -7,23 +7,24 @@ RUN \
 
 COPY fpcbuild-*.tar.gz *.patch *.sh /scripts/
 RUN \
-	sudo mkdir /build && \
-	sudo /scripts/build-fpc.sh --install /opt/fpc /build 3.2.2
+	mkdir ~/build && \
+	/scripts/build-fpc.sh --install user ~/build 3.2.2
 
 ARG ANDROID_API
 ENV ANDROID_API=${ANDROID_API:-21}
 
 RUN \
-	sudo --preserve-env=ANDROID_API,ANDROID_NDK_ROOT -- /scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 aarch64 && \
-	sudo --preserve-env=ANDROID_API,ANDROID_NDK_ROOT -- /scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 arm && \
-	sudo --preserve-env=ANDROID_API,ANDROID_NDK_ROOT -- /scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 x86_64
+	/scripts/build-fpcross.sh --install user ~/build 3.2.2 aarch64 && \
+	/scripts/build-fpcross.sh --install user ~/build 3.2.2 arm && \
+	/scripts/build-fpcross.sh --install user ~/build 3.2.2 x86_64
 
 # -- Phase 2
 # Start with a clean container
 
 FROM docker.io/cimg/android:2021.09.1-ndk
 
-COPY --from=build /opt/fpc /
+COPY --from=build /home/circleci/fpc /home/circleci/fpc
+ENV PATH="/home/circleci/fpc/bin:${PATH}"
 
 ARG ANDROID_API
 ENV ANDROID_API=${ANDROID_API:-21}

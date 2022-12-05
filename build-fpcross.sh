@@ -7,8 +7,13 @@ function print_usage() {
 cat <<EOF
 Usage: build-fpcross.sh [options] BUILD_DIR FPC_VERSION TARGET_ARCH
 Options:
-  --install INSTALL_DIR
+  --destdir DIR
+    Specifies an alternative installation directory
+    for system-wide installs. Does not affect single-user installs.
+  --install <user, system>
     Install the compiler once the build is complete.
+    Use "user" for a single-user install to \$HOME/fpc.
+    or "system" for a system-wide install to /usr.
 Required environment variables:
   - ANDROID_API - target Android API version
   - ANDROID_NDK_ROOT - Android NDK location
@@ -17,7 +22,8 @@ EOF
 
 # -- Parse args
 
-INSTALL_DIR=""
+INSTALL=""
+DESTDIR=""
 
 while [[ "$#" -gt 0 ]]; do
 	if [[ "$1" == "--install" ]]; then
@@ -25,7 +31,18 @@ while [[ "$#" -gt 0 ]]; do
 			echo "build-fpcross.sh: The --install option requires an argument" >&2
 			exit 1
 		fi
-		INSTALL_DIR="$2"
+		if [[ "$2" != "user" ]] && [[ "$2" != "system" ]]; then
+			echo "build-fpcross.sh: The argument to the --install option must be either \"user\" or \"system\"" >&2
+			exit 1
+		fi
+		INSTALL="$2"
+		shift 2
+	elif [[ "$1" == "--destdir" ]]; then
+		if [[ "$#" -eq 1 ]]; then
+			echo "build-fpcross.sh: The --destdir option requires an argument" >&2
+			exit 1
+		fi
+		DESTDIR="$2"
 		shift 2
 	elif [[ "$1" == "--help" ]]; then
 		print_usage
@@ -114,7 +131,15 @@ cd "${BUILD_DIR}/fpcbuild-${FPC_VERSION}/fpcsrc"
 make clean
 
 echo "====----> compiler_cycle"
-NEW_FPC="/opt/fpc/usr/lib/fpc/${FPC_VERSION}/ppcx64"
+
+if [[ "${INSTALL}" == "user" ]]; then
+	NEW_FPC="${HOME}/fpc/lib/fpc/${FPC_VERSION}/ppcx64"
+elif [[ "${INSTALL}" == "system" ]]; then
+	NEW_FPC="${DESTDIR}/usr/lib/fpc/${FPC_VERSION}/ppcx64"
+else
+	NEW_FPC="/usr/lib/fpc/${FPC_VERSION}/ppcx64"
+fi
+
 if [[ -x "${NEW_FPC}" ]]; then
 	nativemake FPC="${NEW_FPC}" compiler_cycle
 else
@@ -129,18 +154,37 @@ crossmake packages_smart
 
 # -- Install (or exit early)
 
-if [[ -z "${INSTALL_DIR}" ]]; then
+if [[ -z "${INSTALL}" ]]; then
 	exit
 fi
 
 echo "====----> install"
-mkdir -p "${INSTALL_DIR}/usr"
-make crossinstall OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" INSTALL_PREFIX="${INSTALL_DIR}/usr"
-ln -sr "${INSTALL_DIR}/usr/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "${INSTALL_DIR}/usr/bin/ppcross${PPC_NAME}"
+
+if [[ "${INSTALL}" == "user" ]]; then
+	mkdir -p "${HOME}/fpc"
+	make crossinstall \
+		OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" \
+		INSTALL_PREFIX="${HOME}/fpc" INSTALL_BINDIR="${HOME}/fpc/bin" INSTALL_LIBDIR="${HOME}/fpc/lib"
+	ln -sr "${HOME}/fpc/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "${HOME}/fpc/bin/ppcross${PPC_NAME}"
+else
+	mkdir -p "${DESTDIR}/usr"
+	make crossinstall \
+		OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" \
+		INSTALL_PREFIX="${DESTDIR}/usr" INSTALL_BINDIR="${DESTDIR}/usr/bin" INSTALL_LIBDIR="${DESTDIR}/usr/lib"
+	ln -sr "${DESTDIR}/usr/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "${DESTDIR}/usr/bin/ppcross${PPC_NAME}"
+fi
+
 
 # -- Add CPU+OS specific-configuration to fpc.cfg
-mkdir -p "${INSTALL_DIR}/etc"
-cat >> "${INSTALL_DIR}/etc/fpc.cfg" <<EOF
+
+if [[ "${INSTALL}" == "user" ]]; then
+	CONF_FILE="${HOME}/fpc/lib/fpc/etc/fpc.cfg"
+else
+	CONF_FILE="${DESTDIR}/etc/fpc.cfg"
+fi
+
+mkdir -p "$(dirname "${CONF_FILE}")"
+cat >> "${CONF_FILE}" <<EOF
 #ifdef android
 #ifdef cpu${TARGET_ARCH}
 -e${NDK_PATH}/toolchains/${TOOLCHAIN_DIR}/prebuilt/linux-x86_64/bin/
