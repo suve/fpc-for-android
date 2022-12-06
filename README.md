@@ -11,7 +11,9 @@ The repository contains two slightly different Containerfiles:
 - The default `Containerfile` takes a very from-the-ground-up approach,
   basing on the Ubuntu 20.04 LTS container image. A copy of the Android NDK
   is required for the build. The FPC cross-compiler is installed system-wide.
-  The end result is a smaller, if more bare-bones, image.
+  The end result is a smaller, if more bare-bones, image. Most notably,
+  it includes only the Android NDK, and not the SDK - meaning that while
+  you can use it to compile code, you can't actually create an `.apk`.
 
 - The alternative `Containerfile-cimg` is based on one of the
   [Circle CI for Android](https://hub.docker.com/r/cimg/android) container
@@ -19,7 +21,20 @@ The repository contains two slightly different Containerfiles:
   The end result is a more comprehensive, if bloated, image.
 
 
-## Requirements
+## Pre-built container images
+
+Pre-built container images are available for download from
+[Docker Hub](https://hub.docker.com/repository/docker/suvepl/fpc-for-android).
+
+- The default image: _[to be uploaded]_
+
+- The `cimg` image: `docker.io/suvepl/fpc-for-android:cimg`
+
+For both of these images, the target Android API level is set to 21
+(Android 5.0 "Lollipop").
+
+
+## Building the images yourself
 
 To build the container images, you'll need the following:
 - Android Native Development Kit r21d (not needed for the `-cimg` image)
@@ -43,7 +58,7 @@ You can download the FPC source code from the
 Make sure to grab the `fpcbuild-X.Y.Z` archive, **not** `fpc-source`.
 
 
-## Picking the target Android API level
+### Picking the target Android API level
 
 Before you can proceed, you may want to take a moment to think about which
 [Android API level](https://en.wikipedia.org/wiki/Android_version_history#Overview)
@@ -52,14 +67,13 @@ for two reasons:
 
 1. FPC itself is built against a specific API level;
    in order to use a different level, the compiler must be rebuilt.
-2. The build process includes a "slimming" script that removes any files
-   pertaining to unused API levels.
+2. For the default image, the build process includes a "slimming" script
+   that removes any files pertaining to unused API levels.
 
-If you do not specify a level, the default value is `21`
-(Android 5.0 "Lollipop").
+If you do not specify a level, the default value is `21`.
 
 
-## Building the container image
+### Performing the build
 
 Assuming you've downloaded both the Android NDK and FPC sources
 and placed them in the same directory as the `Containerfile`,
@@ -79,16 +93,17 @@ as it builds the Free Pascal Compiler four times over:
 This is used to ensure that you'll be using the downloaded version,
 with any patches bundled within this repository applied,
 and not the version found in the Ubuntu repository (which may be older).
-
-2. Second, a cross-compiler for `aarch64-android` (64-bit ARM) is built.
 This step also compiles all the
 [Run-Time Library](https://www.freepascal.org/docs-html/current/rtl/index.html)
 and [Free Component Library](https://www.freepascal.org/docs-html/current/fcl/index.html)
 units redistributed along with the compiler.
 
-3. Third, a compiler for `arm-android` (32-bit ARM) is built.
+2. Second, a cross-compiler for `aarch64-android` (64-bit ARM) is built,
+along with the RTL and FCL units.
 
-4. Fourth, a compiler for `x86_64-android` is built. The x86\_64 Android target
+3. Third, the compiler + RTL + FCL combo is built for `arm-android` (32-bit ARM).
+
+4. Lastly, the same is done for `x86_64-android`. The x86\_64 Android target
 is mostly useful for debugging your apps in the Android Simulator.
 
 
