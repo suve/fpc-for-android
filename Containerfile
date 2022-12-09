@@ -7,7 +7,7 @@ RUN \
 
 COPY fpcbuild-*.tar.gz *.patch *.sh /scripts/
 RUN \
-	mkdir -p build && \
+	mkdir /build && \
 	/scripts/build-fpc.sh --install /opt/fpc /build 3.2.2
 
 ARG ANDROID_API

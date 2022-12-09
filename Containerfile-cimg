@@ -1,0 +1,39 @@
+FROM docker.io/cimg/android:2021.09.1-ndk AS build
+
+RUN \
+	export DEBIAN_FRONTEND=noninteractive && \
+	sudo apt update && \
+	sudo apt install -y fpc gdb zip
+
+COPY fpcbuild-*.tar.gz *.patch *.sh /scripts/
+RUN \
+	sudo mkdir /build && \
+	sudo /scripts/build-fpc.sh --install /opt/fpc /build 3.2.2
+
+ARG ANDROID_API
+ENV ANDROID_API=${ANDROID_API:-21}
+
+RUN \
+	sudo --preserve-env=ANDROID_API,ANDROID_NDK_ROOT -- /scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 aarch64 && \
+	sudo --preserve-env=ANDROID_API,ANDROID_NDK_ROOT -- /scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 arm && \
+	sudo --preserve-env=ANDROID_API,ANDROID_NDK_ROOT -- /scripts/build-fpcross.sh --install /opt/fpc /build 3.2.2 x86_64
+
+# -- Phase 2
+# Start with a clean container
+
+FROM docker.io/cimg/android:2021.09.1-ndk
+
+COPY --from=build /opt/fpc /
+
+ARG ANDROID_API
+ENV ANDROID_API=${ANDROID_API:-21}
+
+# - binutils: not needed for Android, but required by fpc for linking native executables
+# - file: used by ndk-build (though not strictly *required*)
+# - make: required by ndk-build
+RUN \
+	export DEBIAN_FRONTEND=noninteractive && \
+	sudo apt update && \
+	sudo apt install -y binutils file make && \
+	sudo apt clean
+
