@@ -9,6 +9,9 @@ Options:
   --remove-apis
     Remove any api levels other than the one specified by the
     \$ANDROID_API environment variable.
+  --remove-arch ARCH
+    Remove all files used for building for given architecture.
+    This option can be specified multiple times.
   --remove-man
     Remove man pages and other documentation files.
   --verbose
@@ -20,6 +23,10 @@ EOF
 
 # -- Parge args
 
+ARG_ARCH_AARCH64=0
+ARG_ARCH_ARM=0
+ARG_ARCH_X86_64=0
+ARG_ARCH_X86=0
 ARG_APIS=0
 ARG_MAN=0
 VERBOSE=0
@@ -30,6 +37,23 @@ while [[ "$#" -gt 0 ]]; do
 		exit
 	elif [[ "$1" == "--remove-apis" ]]; then
 		ARG_APIS=1
+	elif [[ "$1" == "--remove-arch" ]]; then
+		if [[ "$#" -lt 2 ]]; then
+			echo "ndk-slim.sh: The \"remove-arch\" mode requires an argument" >&2
+			exit 1
+		elif [[ "${2}" == "aarch64" ]]; then
+			ARG_ARCH_AARCH64=1
+		elif [[ "${2}" == "arm" ]]; then
+			ARG_ARCH_ARM=1
+		elif [[ "${2}" == "x86_64" ]]; then
+			ARG_ARCH_X86_64=1
+		elif [[ "${2}" == "x86" ]]; then
+			ARG_ARCH_X86=1
+		else
+			echo "ndk-slim.sh: The argument to \"remove-arch\" must be one of \"aarch64\", \"arm\", \"x86_64\" or \"x86\"" >&2
+			exit 1
+		fi
+		shift 1
 	elif [[ "$1" == "--remove-man" ]]; then
 		ARG_MAN=1
 	elif [[ "$1" == "--verbose" ]]; then
@@ -45,7 +69,7 @@ done
 
 # -- Verify args
 
-if [[ "${ARG_APIS}" -eq 0 ]] && [[ "${ARG_MAN}" -eq 0 ]]; then
+if [[ "${ARG_APIS}" -eq 0 ]] && [[ "${ARG_ARCH_AARCH64}" -eq 0 ]] && [[ "${ARG_ARCH_ARM}" -eq 0 ]] && [[ "${ARG_ARCH_X86_64}" -eq 0 ]] && [[ "${ARG_ARCH_X86}" -eq 0 ]] && [[ "${ARG_MAN}" -eq 0 ]]; then
 	show_help
 	exit 1
 fi
@@ -109,6 +133,110 @@ if [[ "${ARG_APIS}" -gt 0 ]]; then
 
 		rm "${RM_FLAGS}" -r -- "${PLATFORM_DIR}"
 	done
+fi
+
+# -- Arch removal
+# TODO: Take a look at the file names and figure out some way to convert this
+#       from 4 separate cases to 1 case with parameters.
+
+if [[ "${ARG_ARCH_AARCH64}" -eq 1 ]]; then
+	rm "${RM_FLAGS}" -- \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/aarch64-linux-android-* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/aarch64-linux-android*-clang* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux"/libclang_rt.*-aarch64-android.* \
+		# Individual files first.
+
+	rm "${RM_FLAGS}" -r -- \
+		"${NDK_PATH}/build/core/toolchains/aarch64-linux-android-clang/" \
+		"${NDK_PATH}/prebuilt/android-arm64/" \
+		"${NDK_PATH}/sources/cxx-stl/llvm-libc++/libs/arm64-v8a/" \
+		"${NDK_PATH}/sources/third_party/vulkan/src/build-android/jniLibs/arm64-v8a/" \
+		"${NDK_PATH}/sysroot/usr/include/aarch64-linux-android/" \
+		"${NDK_PATH}/sysroot/usr/lib/aarch64-linux-android/" \
+		"${NDK_PATH}/toolchains/aarch64-linux-android-4.9/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux/aarch64/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/test/aarch64/" \
+		"${NDK_PATH}/toolchains/renderscript/prebuilt/linux-x86_64/platform/arm64/" \
+		# Directories next.
+fi
+
+if [[ "${ARG_ARCH_ARM}" -eq 1 ]]; then
+	rm "${RM_FLAGS}" -- \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux"/libclang_rt.*-arm-android.* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/arm-linux-androideabi-* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/armv7a-linux-androideabi*-clang* \
+		# Individual files first.
+
+	rm "${RM_FLAGS}" -r -- \
+		"${NDK_PATH}/build/core/toolchains/arm-linux-androideabi-clang/" \
+		"${NDK_PATH}/prebuilt/android-arm/" \
+		"${NDK_PATH}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/" \
+		"${NDK_PATH}/sources/cxx-stl/llvm-libc++abi/test/native/arm-linux-eabi/" \
+		"${NDK_PATH}/sources/third_party/vulkan/src/build-android/jniLibs/armeabi-v7a/" \
+		"${NDK_PATH}/sysroot/usr/include/arm-linux-androideabi/" \
+		"${NDK_PATH}/sysroot/usr/lib/arm-linux-androideabi/" \
+		"${NDK_PATH}/toolchains/arm-linux-androideabi-4.9/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/arm-linux-androideabi/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux/arm/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/arm-linux-androideabi/ "\
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/test/arm/" \
+		"${NDK_PATH}/toolchains/renderscript/prebuilt/linux-x86_64/platform/arm/" \
+		# Directories next.
+fi
+
+if [[ "${ARG_ARCH_X86_64}" -eq 1 ]]; then
+	rm "${RM_FLAGS}" -- \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux"/libclang_rt.*-x86_64-android.* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/x86_64-linux-android-* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/x86_64-linux-android*-clang* \
+		# Individual files first.
+
+	rm "${RM_FLAGS}" -r -- \
+		"${NDK_PATH}/build/core/toolchains/x86_64-clang/" \
+		"${NDK_PATH}/prebuilt/android-x86_64/" \
+		"${NDK_PATH}/sources/cxx-stl/llvm-libc++/libs/x86_64/" \
+		"${NDK_PATH}/sources/third_party/vulkan/src/build-android/jniLibs/x86_64/" \
+		"${NDK_PATH}/sysroot/usr/include/x86_64-linux-android/" \
+		"${NDK_PATH}/sysroot/usr/lib/x86_64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/x86_64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux/x86_64/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/x86_64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/x86_64-linux-android/" \
+		"${NDK_PATH}/toolchains/renderscript/prebuilt/linux-x86_64/platform/x86_64/" \
+		"${NDK_PATH}/toolchains/x86_64-4.9/" \
+		# Directories next.
+fi
+
+if [[ "${ARG_ARCH_X86}" -eq 1 ]]; then
+	rm "${RM_FLAGS}" -- \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux"/libclang_rt.*-i686-android.* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin"/i686-linux-android-* \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/"i686-linux-android*-clang* \
+		# Individual files first.
+
+	rm "${RM_FLAGS}" -r -- \
+		"${NDK_PATH}/build/core/toolchains/x86-clang/" \
+		"${NDK_PATH}/prebuilt/android-x86/" \
+		"${NDK_PATH}/sources/cxx-stl/llvm-libc++/libs/x86/" \
+		"${NDK_PATH}/sources/third_party/vulkan/src/build-android/jniLibs/x86/" \
+		"${NDK_PATH}/sysroot/usr/include/i686-linux-android/" \
+		"${NDK_PATH}/sysroot/usr/lib/i686-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/i686-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/i686-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.8/lib/linux/i386/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/i686-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/i686-linux-android/" \
+		"${NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/test/i686/" \
+		"${NDK_PATH}/toolchains/renderscript/prebuilt/linux-x86_64/platform/x86/" \
+		"${NDK_PATH}/toolchains/x86-4.9/" \
+		# Directories next.
 fi
 
 # -- Man pages removal

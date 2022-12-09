@@ -21,7 +21,7 @@ RUN \
 	unzip android-ndk-r21d.zip && \
 	mv android-ndk-r21d/ /opt/android/ndk-21d && \
 	rm android-ndk-r21d.zip && \
-	/scripts/ndk-slim.sh --remove-apis --remove-man --verbose
+	/scripts/ndk-slim.sh --remove-apis --remove-arch x86 --remove-man --verbose
 
 RUN \
 	/scripts/build-fpcross.sh --install system --destdir /opt/fpc /build 3.2.2 aarch64 && \
