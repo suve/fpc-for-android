@@ -112,7 +112,7 @@ fi
 
 function nativemake() {
 	make -j "$(nproc)" \
-		$@ \
+		"$@" \
 		NOGDB=1 \
 		OS_TARGET="android" \
 		CPU_TARGET="${TARGET_ARCH}" \
@@ -121,7 +121,7 @@ function nativemake() {
 }
 
 function crossmake() {
-	nativemake $@ FPC="${BUILD_DIR}/fpcbuild-${FPC_VERSION}/fpcsrc/compiler/ppcross${PPC_NAME}"
+	nativemake "$@" FPMAKEOPT="-T $(nproc)" FPC="${BUILD_DIR}/fpcbuild-${FPC_VERSION}/fpcsrc/compiler/ppcross${PPC_NAME}"
 }
 
 # Add Android NDK toolchain to PATH

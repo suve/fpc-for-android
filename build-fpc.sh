@@ -75,10 +75,10 @@ echo "====----> compiler_cycle"
 make -j "$(nproc)" OPT="-gl" compiler_cycle
 
 echo "====----> RTL"
-make -j "$(nproc)" FPC="${NEW_FPC}" OPT="-gl" rtl_clean rtl_smart
+make -j "$(nproc)" FPMAKEOPT="-T $(nproc)" FPC="${NEW_FPC}" OPT="-gl" rtl_clean rtl_smart
 
 echo "====----> packages"
-make -j "$(nproc)" FPC="${NEW_FPC}" OPT="-gl" packages_smart
+make -j "$(nproc)" FPMAKEOPT="-T $(nproc)" FPC="${NEW_FPC}" OPT="-gl" packages_smart
 
 # -- Install (or exit early)
 
