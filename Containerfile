@@ -1,4 +1,4 @@
-FROM docker.io/ubuntu:20.04 AS build
+FROM docker.io/ubuntu:22.04 AS build
 
 RUN \
 	export DEBIAN_FRONTEND=noninteractive && \
@@ -31,7 +31,7 @@ RUN \
 # -- Phase 2
 # Start with a clean container
 
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:22.04
 
 COPY --from=build /opt/android /opt/android
 COPY --from=build /opt/fpc /

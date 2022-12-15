@@ -9,7 +9,7 @@ to allow cross-compilation for Android.
 The repository contains two slightly different Containerfiles:
 
 - The default `Containerfile` takes a very from-the-ground-up approach,
-  basing on the Ubuntu 20.04 LTS container image. A copy of the Android NDK
+  basing on the Ubuntu 22.04 LTS container image. A copy of the Android NDK
   is required for the build. The FPC cross-compiler is installed system-wide.
   The end result is a smaller, if more bare-bones, image. Most notably,
   it includes only the Android NDK, and not the SDK - meaning that while
@@ -26,7 +26,7 @@ The repository contains two slightly different Containerfiles:
 Pre-built container images are available for download from
 [Docker Hub](https://hub.docker.com/repository/docker/suvepl/fpc-for-android).
 
-- The default image: _[to be uploaded]_
+- The default image: `docker.io/suvepl/fpc-for-android:bare`
 
 - The `cimg` image: `docker.io/suvepl/fpc-for-android:cimg`
 
@@ -105,6 +105,9 @@ along with the RTL and FCL units.
 
 4. Lastly, the same is done for `x86_64-android`. The x86\_64 Android target
 is mostly useful for debugging your apps in the Android Simulator.
+
+Note that the `x86-android` (for 32-bit Intel/AMD processors)
+target is \*NOT\* included here.
 
 
 ## Licensing
