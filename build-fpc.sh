@@ -78,7 +78,7 @@ echo "====----> RTL"
 make -j "$(nproc)" FPMAKEOPT="-T $(nproc)" FPC="${NEW_FPC}" OPT="-gl" rtl_clean rtl_smart
 
 echo "====----> packages"
-make -j "$(nproc)" FPMAKEOPT="-T $(nproc)" FPC="${NEW_FPC}" OPT="-gl" packages_smart
+make -j "$(nproc)" FPMAKEOPT="-T $(nproc) --NoIDE=1" FPC="${NEW_FPC}" OPT="-gl" packages_smart
 
 # -- Install (or exit early)
 
@@ -90,11 +90,15 @@ echo "====----> install"
 
 if [[ "${INSTALL}" == "user" ]]; then
 	mkdir -p "${HOME}/fpc"
-	make install INSTALL_PREFIX="${HOME}/fpc" INSTALL_BINDIR="${HOME}/fpc/bin" INSTALL_LIBDIR="${HOME}/fpc/lib"
+	make install \
+		FPMAKEOPT="--NoIDE=1" \
+		INSTALL_PREFIX="${HOME}/fpc" INSTALL_BINDIR="${HOME}/fpc/bin" INSTALL_LIBDIR="${HOME}/fpc/lib" FPMAKEOPT="--NoIDE=1"
 	ln -sr "${HOME}/fpc/lib/fpc/${FPC_VERSION}/ppcx64" "${HOME}/fpc/bin/ppcx64"
 else
 	mkdir -p "${DESTDIR}/usr"
-	make install INSTALL_PREFIX="${DESTDIR}/usr" INSTALL_BINDIR="${DESTDIR}/usr/bin" INSTALL_LIBDIR="${DESTDIR}/usr/lib"
+	make install \
+		FPMAKEOPT="--NoIDE=1" \
+		INSTALL_PREFIX="${DESTDIR}/usr" INSTALL_BINDIR="${DESTDIR}/usr/bin" INSTALL_LIBDIR="${DESTDIR}/usr/lib" FPMAKEOPT="--NoIDE=1"
 	ln -sr "${DESTDIR}/usr/lib/fpc/${FPC_VERSION}/ppcx64" "${DESTDIR}/usr/bin/ppcx64"
 fi
 

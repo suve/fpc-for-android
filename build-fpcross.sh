@@ -121,7 +121,7 @@ function nativemake() {
 }
 
 function crossmake() {
-	nativemake "$@" FPMAKEOPT="-T $(nproc)" FPC="${BUILD_DIR}/fpcbuild-${FPC_VERSION}/fpcsrc/compiler/ppcross${PPC_NAME}"
+	nativemake "$@" FPMAKEOPT="-T $(nproc) --NoIDE=1" FPC="${BUILD_DIR}/fpcbuild-${FPC_VERSION}/fpcsrc/compiler/ppcross${PPC_NAME}"
 }
 
 # Add Android NDK toolchain to PATH
@@ -163,12 +163,14 @@ echo "====----> install"
 if [[ "${INSTALL}" == "user" ]]; then
 	mkdir -p "${HOME}/fpc"
 	make crossinstall \
+		FPMAKEOPT="--NoIDE=1" \
 		OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" \
 		INSTALL_PREFIX="${HOME}/fpc" INSTALL_BINDIR="${HOME}/fpc/bin" INSTALL_LIBDIR="${HOME}/fpc/lib"
 	ln -sr "${HOME}/fpc/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "${HOME}/fpc/bin/ppcross${PPC_NAME}"
 else
 	mkdir -p "${DESTDIR}/usr"
 	make crossinstall \
+		FPMAKEOPT="--NoIDE=1" \
 		OS_TARGET=android CPU_TARGET="${TARGET_ARCH}" \
 		INSTALL_PREFIX="${DESTDIR}/usr" INSTALL_BINDIR="${DESTDIR}/usr/bin" INSTALL_LIBDIR="${DESTDIR}/usr/lib"
 	ln -sr "${DESTDIR}/usr/lib/fpc/${FPC_VERSION}/ppcross${PPC_NAME}" "${DESTDIR}/usr/bin/ppcross${PPC_NAME}"
